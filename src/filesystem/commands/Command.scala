@@ -7,5 +7,8 @@ trait Command {
 }
 
 object Command {
-  def from(input: String): Command = new UnknownCommand
+  def from(input: String): Command = input.split(" ") match {
+    case Array("mkdir", name) => new Mkdir(name)
+    case _ => new UnknownCommand
+  }
 }
