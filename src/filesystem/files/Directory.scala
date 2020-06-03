@@ -16,8 +16,12 @@ object Directory {
   def createRoot: Directory = Directory.createEmpty("", "")
 
   def addEmpty(parentDirectory: Directory, name: String): Directory =
-    Directory.createEmpty(
-      s"${parentDirectory.parentPath}/${parentDirectory.name}",
-      name
+    new Directory(
+      parentDirectory.parentPath,
+      parentDirectory.name,
+      parentDirectory.contents :+ Directory.createEmpty(
+        s"${parentDirectory.parentPath}/${parentDirectory.name}",
+        name
+      )
     )
 }
