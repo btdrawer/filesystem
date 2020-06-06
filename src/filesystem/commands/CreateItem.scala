@@ -21,7 +21,7 @@ abstract class CreateItem(name: String) extends Command {
         )
         newWd <- newRoot.findDescendant(allDirectoriesInPath)
       } yield State(
-        newRoot, newWd, s"Created new item: ${newItem.name} [${newItem.getType}]"
+        newRoot, newWd, s"Created new item: ${newItem.getPrettyName}"
       )
 
       doCreateItem.getOrElse(
