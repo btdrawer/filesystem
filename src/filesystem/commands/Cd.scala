@@ -21,19 +21,26 @@ class Cd(path: String) extends Command {
         val descendant = rootDirectory.findDescendant(
           Directory.getDirectoriesFromPath(currentDirectory.parentPath)
         )
-        descendant.flatMap(d => moveToDirectory(rootDirectory, d, path.tail))
+        descendant.flatMap(d =>
+          moveToDirectory(rootDirectory, d, path.tail)
+        )
       }
       case _ => {
         val nextDirectory = currentDirectory.findItem(path.head)
         nextDirectory.flatMap(
-          directory => moveToDirectory(rootDirectory, directory.asDirectory, path.tail)
+          directory =>
+            moveToDirectory(rootDirectory, directory.asDirectory, path.tail)
         )
       }
     }
   }
 
   override def apply(state: State): State = {
-    val newWd = moveToDirectory(state.root, state.wd, directoriesFromPath)
+    val newWd = {
+      if (path.startsWith(Directory.SEPARATOR))
+        moveToDirectory(state.root, state.root, directoriesFromPath)
+      else moveToDirectory(state.root, state.wd, directoriesFromPath)
+    }
     newWd.flatMap(wd => {
       val message = {
         if (wd.isRoot) "Switched to root directory"
