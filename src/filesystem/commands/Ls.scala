@@ -5,7 +5,7 @@ import filesystem.filesystem.State
 
 class Ls() extends Command {
   def getNamesOfContents(directory: Directory): List[String] =
-    directory.contents.map(item => s"${item.name} [${item.getType}]")
+    directory.contents.map(item => item.getPrettyName)
 
   def listContents(directory: Directory): String =
     getNamesOfContents(directory).mkString("\n")

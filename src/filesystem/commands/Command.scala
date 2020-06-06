@@ -12,9 +12,10 @@ object Command {
   val PWD = "pwd"
   val CD = "cd"
   val TOUCH = "touch"
+  val RM = "rm"
 
   def from(input: String): Command = input.split(" ") match {
-      // MKDIR
+    // MKDIR
     case Array(MKDIR, name) => new Mkdir(name)
     case Array(MKDIR) => new IncompleteCommand(
       MKDIR,
@@ -22,15 +23,15 @@ object Command {
     )
     case Array(MKDIR, _*) => new TooManyArguments(MKDIR)
 
-      // LS
+    // LS
     case Array(LS) => new Ls()
     case Array(LS, _*) => new TooManyArguments(LS)
 
-      // PWD
+    // PWD
     case Array(PWD) => new Pwd()
     case Array(PWD, _*) => new TooManyArguments(PWD)
 
-      // CD
+    // CD
     case Array(CD, path) => new Cd(path)
     case Array(CD) => new IncompleteCommand(
       CD,
@@ -38,13 +39,21 @@ object Command {
     )
     case Array(CD, _*) => new TooManyArguments(CD)
 
-      // TOUCH
+    // TOUCH
     case Array(TOUCH, name) => new Touch(name)
     case Array(TOUCH) => new IncompleteCommand(
       TOUCH,
       "You must supply a name for your new file."
     )
     case Array(TOUCH, _*) => new TooManyArguments(TOUCH)
+
+    // RM
+    case Array(RM, name) => new Rm(name)
+    case Array(RM) => new IncompleteCommand(
+      RM,
+      "You must supply the name of the item you wish to remove."
+    )
+    case Array(RM, _*) => new TooManyArguments(CD)
 
     case _ => new UnknownCommand
   }

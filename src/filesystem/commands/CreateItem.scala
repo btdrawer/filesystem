@@ -17,7 +17,7 @@ abstract class CreateItem(name: String) extends Command {
 
       val doCreateItem = for {
         newRoot <- Directory.updateStructure(
-          state.root, allDirectoriesInPath, newItem
+          state.root, allDirectoriesInPath, newItem, Directory.ADD_ITEM
         )
         newWd <- newRoot.findDescendant(allDirectoriesInPath)
       } yield State(

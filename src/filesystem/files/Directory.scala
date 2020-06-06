@@ -21,13 +21,18 @@ class Directory(override val parentPath: String, override val name: String, val 
   def findItem(name: String): Option[Item] =
     contents.find(item => item.name == name)
 
+  def hasItem(name: String): Boolean =
+    contents.exists(item => item.name == name)
+
   def replaceItem(itemName: String, newItem: Item): Directory =
     new Directory(parentPath, name,
       contents.filter(item => item.name != itemName) :+ newItem
     )
 
-  def hasItem(name: String): Boolean =
-    contents.exists(item => item.name == name)
+  def removeItem(item: Item): Directory =
+    new Directory(parentPath, name,
+      contents.filter(i => i.name != item.name)
+    )
 
   def getAllDirectoriesInPath: List[String] =
     Directory.getDirectoriesFromPath(path.substring(1))
@@ -47,6 +52,9 @@ object Directory {
   val CURRENT_DIRECTORY = "."
   val GO_UP = ".."
 
+  val ADD_ITEM = "add_item"
+  val REMOVE_ITEM = "remove_item"
+
   def createRoot: Directory = Directory.createEmpty("", "")
 
   def createEmpty(parentPath: String, name: String): Directory = new Directory(
@@ -60,11 +68,19 @@ object Directory {
     .toList
     .filter(directoryName => !directoryName.isEmpty)
 
-  def updateStructure(currentDirectory: Directory, path: List[String], newItem: Item): Option[Directory] = {
-    if (path.isEmpty) Some(currentDirectory.addItem(newItem))
-    else for {
+  def updateStructure(
+                       currentDirectory: Directory,
+                       path: List[String],
+                       item: Item,
+                       action: String
+                     ): Option[Directory] = {
+    if (path.isEmpty) action match {
+      case ADD_ITEM => Some(currentDirectory.addItem(item))
+      case REMOVE_ITEM => Some(currentDirectory.removeItem(item))
+      case _ => throw new IllegalArgumentException(s"Unknown action supplied: $action.")
+    } else for {
       nextDirectory <- currentDirectory.findItem(path.head)
-      updatedDirectory <- updateStructure(nextDirectory.asDirectory, path.tail, newItem)
+      updatedDirectory <- updateStructure(nextDirectory.asDirectory, path.tail, item, action)
     } yield currentDirectory.replaceItem(updatedDirectory.name, updatedDirectory)
   }
 }
