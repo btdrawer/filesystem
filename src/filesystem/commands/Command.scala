@@ -9,6 +9,8 @@ trait Command {
 object Command {
   val MKDIR = "mkdir"
   val LS = "ls"
+  val PWD = "pwd"
+  val CD = "cd"
 
   def from(input: String): Command = input.split(" ") match {
       // MKDIR
@@ -22,6 +24,18 @@ object Command {
       // LS
     case Array(LS) => new Ls()
     case Array(LS, _*) => new TooManyArguments(LS)
+
+      // PWD
+    case Array(PWD) => new Pwd()
+    case Array(PWD, _*) => new TooManyArguments(PWD)
+
+      // CD
+    case Array(CD, path) => new Cd(path)
+    case Array(CD) => new IncompleteCommand(
+      CD,
+      "You must supply the name of the directory you wish to change to."
+    )
+    case Array(CD, _*) => new TooManyArguments(CD)
 
     case _ => new UnknownCommand
   }

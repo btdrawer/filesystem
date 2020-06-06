@@ -21,11 +21,7 @@ class Directory(override val parentPath: String, override val name: String, val 
     contents.exists(item => item.name == name)
 
   def getAllDirectoriesInPath: List[String] =
-    path
-      .substring(1)
-      .split(Directory.SEPARATOR)
-      .toList
-      .filter(directoryName => !directoryName.isEmpty)
+    Directory.getDirectoriesFromPath(path.substring(1))
 
   def findDescendant(path: List[String]): Directory = {
     if (path.isEmpty) this
@@ -44,4 +40,9 @@ object Directory {
   )
 
   def createRoot: Directory = Directory.createEmpty("", "")
+
+  def getDirectoriesFromPath(path: String): List[String] = path
+    .split(Directory.SEPARATOR)
+    .toList
+    .filter(directoryName => !directoryName.isEmpty)
 }
