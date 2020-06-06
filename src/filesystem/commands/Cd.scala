@@ -34,10 +34,14 @@ class Cd(path: String) extends Command {
 
   override def apply(state: State): State = {
     val newWd = moveToDirectory(state.root, state.wd, directoriesFromPath)
-    newWd.flatMap(wd =>
-      Some(State(state.root, wd, s"Switched to directory: ${wd.name}"))
-    ).getOrElse(
-      Some(state.setMessage("Directory not found."))
+    newWd.flatMap(wd => {
+      val message = {
+        if (wd.isRoot) "Switched to root directory"
+        else s"Switched to directory: ${wd.name}"
+      }
+      Some(State(state.root, wd, message))
+    }).getOrElse(
+      state.setMessage("Directory not found.")
     )
   }
 }

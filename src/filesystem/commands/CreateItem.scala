@@ -25,7 +25,7 @@ abstract class CreateItem(name: String) extends Command {
       )
 
       doCreateItem.getOrElse(
-        Some(state.setMessage("Could not create item."))
+        state.setMessage("Could not create item.")
       )
     }
   }
