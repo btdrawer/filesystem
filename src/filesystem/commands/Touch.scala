@@ -10,7 +10,7 @@ class Touch(name: String) extends Command {
       state.setMessage("Invalid name.")
     else {
       val allDirectoriesInPath = state.wd.getAllDirectoriesInPath
-      val newFile = new File(state.wd.parentPath, name)
+      val newFile = File.createEmpty(state.wd.parentPath, name)
       val newRoot = Directory.updateStructure(
         state.root, allDirectoriesInPath, newFile
       )
