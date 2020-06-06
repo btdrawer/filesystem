@@ -32,6 +32,9 @@ class Directory(override val parentPath: String, override val name: String, val 
 object Directory {
   val SEPARATOR = "/"
   val ROOT_PATH = "/"
+  val GO_UP = ".."
+
+  def createRoot: Directory = Directory.createEmpty("", "")
 
   def createEmpty(parentPath: String, name: String): Directory = new Directory(
     parentPath,
@@ -39,10 +42,18 @@ object Directory {
     List()
   )
 
-  def createRoot: Directory = Directory.createEmpty("", "")
-
   def getDirectoriesFromPath(path: String): List[String] = path
     .split(Directory.SEPARATOR)
     .toList
     .filter(directoryName => !directoryName.isEmpty)
+
+  def updateStructure(currentDirectory: Directory, path: List[String], newItem: Item): Directory = {
+    if (path.isEmpty) currentDirectory.addItem(newItem)
+    else {
+      val oldDirectory = currentDirectory.findItem(path.head).asDirectory
+      currentDirectory.replaceItem(oldDirectory.name,
+        updateStructure(oldDirectory, path.tail, newItem)
+      )
+    }
+  }
 }

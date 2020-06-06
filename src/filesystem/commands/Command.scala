@@ -11,6 +11,7 @@ object Command {
   val LS = "ls"
   val PWD = "pwd"
   val CD = "cd"
+  val TOUCH = "touch"
 
   def from(input: String): Command = input.split(" ") match {
       // MKDIR
@@ -36,6 +37,14 @@ object Command {
       "You must supply the name of the directory you wish to change to."
     )
     case Array(CD, _*) => new TooManyArguments(CD)
+
+      // TOUCH
+    case Array(TOUCH, name) => new Touch(name)
+    case Array(TOUCH) => new IncompleteCommand(
+      TOUCH,
+      "You must supply a name for your new file."
+    )
+    case Array(TOUCH, _*) => new TooManyArguments(TOUCH)
 
     case _ => new UnknownCommand
   }

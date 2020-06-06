@@ -3,17 +3,17 @@ import filesystem.files.Directory
 import filesystem.filesystem.State
 
 class Cd(path: String) extends Command {
-  val GO_UP = ".."
-
   def directoriesFromPath: List[String] =
     Directory.getDirectoriesFromPath(path)
 
   def moveToDirectory(rootDirectory: Directory, currentDirectory: Directory, path: List[String]): Directory = {
     if (path.isEmpty) currentDirectory
     else path.head match {
-      case GO_UP => moveToDirectory(
+      case Directory.GO_UP => moveToDirectory(
         rootDirectory,
-        rootDirectory.findDescendant(Directory.getDirectoriesFromPath(currentDirectory.parentPath)),
+        rootDirectory.findDescendant(
+          Directory.getDirectoriesFromPath(currentDirectory.parentPath)
+        ),
         path.tail
       )
       case _ => {
