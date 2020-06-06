@@ -5,6 +5,8 @@ abstract class Item(val parentPath: String, val name: String) {
 
   def isIllegalName: Boolean = Item.isIllegalName(name)
 
+  def isDirectory: Boolean
+
   def asDirectory: Directory
 
   def asFile: File

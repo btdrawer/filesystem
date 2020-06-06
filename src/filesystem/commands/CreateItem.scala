@@ -1,4 +1,5 @@
 package filesystem.commands
+
 import filesystem.files.{Directory, Item}
 import filesystem.filesystem.State
 
@@ -13,11 +14,19 @@ abstract class CreateItem(name: String) extends Command {
     else {
       val allDirectoriesInPath = state.wd.getAllDirectoriesInPath
       val newItem = createItem(name, state)
-      val newRoot = Directory.updateStructure(
-        state.root, allDirectoriesInPath, newItem
+
+      val doCreateItem = for {
+        newRoot <- Directory.updateStructure(
+          state.root, allDirectoriesInPath, newItem
+        )
+        newWd <- newRoot.findDescendant(allDirectoriesInPath)
+      } yield State(
+        newRoot, newWd, s"Created new item: ${newItem.name} [${newItem.getType}]"
       )
-      val newWd = newRoot.findDescendant(allDirectoriesInPath)
-      State(newRoot, newWd, s"Created new item: ${newItem.name} [${newItem.getType}]")
+
+      doCreateItem.getOrElse(
+        Some(state.setMessage("Could not create item."))
+      )
     }
   }
 }

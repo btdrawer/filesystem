@@ -7,15 +7,19 @@ class Directory(override val parentPath: String, override val name: String, val 
   override def asFile: File =
     throw new FilesystemException("Cannot be converted to a file.")
 
+  override def isDirectory: Boolean = true
+
   override def asDirectory: Directory = this
 
   override def getType: String = "Directory"
 
+  def isRoot: Boolean = parentPath.isEmpty
+
   def addItem(item: Item): Directory =
     new Directory(parentPath, name, contents :+ item)
 
-  def findItem(name: String): Item =
-    contents.filter(item => item.name == name).head
+  def findItem(name: String): Option[Item] =
+    contents.find(item => item.name == name)
 
   def replaceItem(itemName: String, newItem: Item): Directory =
     new Directory(parentPath, name,
@@ -28,15 +32,19 @@ class Directory(override val parentPath: String, override val name: String, val 
   def getAllDirectoriesInPath: List[String] =
     Directory.getDirectoriesFromPath(path.substring(1))
 
-  def findDescendant(path: List[String]): Directory = {
-    if (path.isEmpty) this
-    else findItem(path.head).asDirectory.findDescendant(path.tail)
+  def findDescendant(path: List[String]): Option[Directory] = {
+    if (path.isEmpty) Some(this)
+    else findItem(path.head)
+      .flatMap(directory =>
+        directory.asDirectory.findDescendant(path.tail)
+      )
   }
 }
 
 object Directory {
   val SEPARATOR = "/"
   val ROOT_PATH = "/"
+  val CURRENT_DIRECTORY = "."
   val GO_UP = ".."
 
   def createRoot: Directory = Directory.createEmpty("", "")
@@ -52,13 +60,11 @@ object Directory {
     .toList
     .filter(directoryName => !directoryName.isEmpty)
 
-  def updateStructure(currentDirectory: Directory, path: List[String], newItem: Item): Directory = {
-    if (path.isEmpty) currentDirectory.addItem(newItem)
-    else {
-      val oldDirectory = currentDirectory.findItem(path.head).asDirectory
-      currentDirectory.replaceItem(oldDirectory.name,
-        updateStructure(oldDirectory, path.tail, newItem)
-      )
-    }
+  def updateStructure(currentDirectory: Directory, path: List[String], newItem: Item): Option[Directory] = {
+    if (path.isEmpty) Some(currentDirectory.addItem(newItem))
+    else for {
+      nextDirectory <- currentDirectory.findItem(path.head)
+      updatedDirectory <- updateStructure(nextDirectory.asDirectory, path.tail, newItem)
+    } yield currentDirectory.replaceItem(updatedDirectory.name, updatedDirectory)
   }
 }

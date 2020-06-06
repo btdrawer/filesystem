@@ -1,4 +1,5 @@
 package filesystem.commands
+
 import filesystem.files.Directory
 import filesystem.filesystem.State
 
@@ -6,25 +7,37 @@ class Cd(path: String) extends Command {
   def directoriesFromPath: List[String] =
     Directory.getDirectoriesFromPath(path)
 
-  def moveToDirectory(rootDirectory: Directory, currentDirectory: Directory, path: List[String]): Directory = {
-    if (path.isEmpty) currentDirectory
+  def moveToDirectory(
+                       rootDirectory: Directory,
+                       currentDirectory: Directory,
+                       path: List[String]
+                     ): Option[Directory] = {
+    if (path.isEmpty) Some(currentDirectory)
     else path.head match {
-      case Directory.GO_UP => moveToDirectory(
-        rootDirectory,
-        rootDirectory.findDescendant(
-          Directory.getDirectoriesFromPath(currentDirectory.parentPath)
-        ),
-        path.tail
+      case Directory.CURRENT_DIRECTORY => moveToDirectory(
+        rootDirectory, currentDirectory, path.tail
       )
+      case Directory.GO_UP => {
+        val descendant = rootDirectory.findDescendant(
+          Directory.getDirectoriesFromPath(currentDirectory.parentPath)
+        )
+        descendant.flatMap(d => moveToDirectory(rootDirectory, d, path.tail))
+      }
       case _ => {
-        val nextDirectory = currentDirectory.findItem(path.head).asDirectory
-        moveToDirectory(rootDirectory, nextDirectory, path.tail)
+        val nextDirectory = currentDirectory.findItem(path.head)
+        nextDirectory.flatMap(
+          directory => moveToDirectory(rootDirectory, directory.asDirectory, path.tail)
+        )
       }
     }
   }
 
   override def apply(state: State): State = {
     val newWd = moveToDirectory(state.root, state.wd, directoriesFromPath)
-    State(state.root, newWd, s"Switched to directory: ${newWd.name}")
+    newWd.flatMap(wd =>
+      Some(State(state.root, wd, s"Switched to directory: ${wd.name}"))
+    ).getOrElse(
+      Some(state.setMessage("Directory not found."))
+    )
   }
 }
