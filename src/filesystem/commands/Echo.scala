@@ -35,6 +35,9 @@ class Echo(tokens: List[String]) extends Command {
     if (!isFile(state.wd, name)) state.setMessage(
       s"A directory exists with this name: $name."
     )
+    else if (Item.isIllegalName(name)) state.setMessage(
+      s"Illegal name: $name. File names cannot include dots or separators."
+    )
     else {
       val file = new File(state.wd.parentPath, name, contents)
       writeToFile(file, state).getOrElse(
@@ -64,11 +67,14 @@ class Echo(tokens: List[String]) extends Command {
 
     if (size > 2) {
       val command = newTokens(size - 2)
-      if (command.equals(Command.ECHO_TO_FILE)) echoToFile(
-        tokens.last, getContents(newTokens), state
-      ) else if (command.equals(Command.APPEND_TO_FILE)) appendToFile(
-        tokens.last, getContents(newTokens), state
-      ) else doPrintContents
+      val name = tokens.last
+      val contents = getContents(newTokens)
+
+      if (command.equals(Command.ECHO_TO_FILE))
+        echoToFile(name, contents, state)
+      else if (command.equals(Command.APPEND_TO_FILE))
+        appendToFile(name, contents, state)
+      else doPrintContents
     } else doPrintContents
   }
 }
