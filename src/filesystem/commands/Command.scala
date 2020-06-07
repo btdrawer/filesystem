@@ -16,7 +16,8 @@ object Command {
   val ECHO = "echo"
   val CAT = "cat"
 
-  val SEND_TO = ">"
+  val ECHO_TO_FILE = ">"
+  val APPEND_TO_FILE = ">>"
 
   def from(input: String): Command = {
     val tokens = input.split(" ").toList

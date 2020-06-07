@@ -1,7 +1,7 @@
 package filesystem.commands
 
-import filesystem.files.{Directory, File}
-import filesystem.filesystem.State
+import filesystem.files.{Directory, File, Item}
+import filesystem.filesystem.{FilesystemException, State}
 
 class Echo(tokens: List[String]) extends Command {
   def mkString(tokens: List[String]): String =
@@ -13,24 +13,46 @@ class Echo(tokens: List[String]) extends Command {
   def printContents(tokens: List[String], state: State): State =
     state.setMessage(mkString(tokens))
 
-  def writeToFile(name: String, contents: String, state: State): State =
+  def writeToFile(file: File, state: State): Option[State] = {
+    val allDirectoriesInPath = state.wd.getAllDirectoriesInPath
+    for {
+      newRoot <- Directory.updateStructure(
+        state.root, allDirectoriesInPath, file, Directory.REPLACE_ITEM
+      )
+      newWd <- newRoot.findDescendant(allDirectoriesInPath)
+    } yield State(
+      newRoot, newWd, s"Wrote to file: ${file.getPrettyName}"
+    )
+  }
+
+  def isFile(wd: Directory, name: String): Boolean =
+    wd
+      .findItem(name)
+      .flatMap(item => Some(!item.isDirectory))
+      .getOrElse(true)
+
+  def echoToFile(name: String, contents: String, state: State): State = {
+    if (!isFile(state.wd, name)) state.setMessage(
+      s"A directory exists with this name: $name."
+    )
+    else {
+      val file = new File(state.wd.parentPath, name, contents)
+      writeToFile(file, state).getOrElse(
+        // This will only be called if something else is wrong in the program
+        state.setMessage("An error occurred.")
+      )
+    }
+  }
+
+  def appendToFile(name: String, contents: String, state: State): State =
     state.wd.findItem(name).flatMap(item => {
-      val allDirectoriesInPath = state.wd.getAllDirectoriesInPath
       val oldFile = item.asFile
       val newFile = new File(
         oldFile.parentPath,
         oldFile.name,
         oldFile.contents ++ contents
       )
-
-      for {
-        newRoot <- Directory.updateStructure(
-          state.root, allDirectoriesInPath, newFile, Directory.REPLACE_ITEM
-        )
-        newWd <- newRoot.findDescendant(allDirectoriesInPath)
-      } yield State(
-        newRoot, newWd, s"Wrote to file: ${newFile.getPrettyName}"
-      )
+      writeToFile(newFile, state)
     }).getOrElse(
       state.setMessage(s"File not found: $name.")
     )
@@ -41,12 +63,12 @@ class Echo(tokens: List[String]) extends Command {
     val doPrintContents = printContents(newTokens, state)
 
     if (size > 2) {
-      if (newTokens(size - 2).equals(Command.SEND_TO)) writeToFile(
+      val command = newTokens(size - 2)
+      if (command.equals(Command.ECHO_TO_FILE)) echoToFile(
+        tokens.last, getContents(newTokens), state
+      ) else if (command.equals(Command.APPEND_TO_FILE)) appendToFile(
         tokens.last, getContents(newTokens), state
       ) else doPrintContents
-    } else if (
-      size == 2 && newTokens(size - 2).equals(Command.SEND_TO)
-    ) state.setMessage("You have not specified anything to write to this file.")
-    else doPrintContents
+    } else doPrintContents
   }
 }
