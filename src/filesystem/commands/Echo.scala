@@ -40,10 +40,13 @@ class Echo(tokens: List[String]) extends Command {
     val size = newTokens.size
     val doPrintContents = printContents(newTokens, state)
 
-    if (size > 3) {
+    if (size > 2) {
       if (newTokens(size - 2).equals(Command.SEND_TO)) writeToFile(
         tokens.last, getContents(newTokens), state
       ) else doPrintContents
-    } else doPrintContents
+    } else if (
+      size == 2 && newTokens(size - 2).equals(Command.SEND_TO)
+    ) state.setMessage("You have not specified anything to write to this file.")
+    else doPrintContents
   }
 }
