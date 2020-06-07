@@ -45,7 +45,7 @@ class Echo(tokens: List[String]) extends Command {
       val newFile = new File(
         oldFile.parentPath,
         oldFile.name,
-        oldFile.contents ++ contents
+        oldFile.contents + "\n" + contents
       )
       UpdateItem(
         newFile, Directory.REPLACE_ITEM, successMessage, state
