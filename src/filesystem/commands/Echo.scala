@@ -3,15 +3,24 @@ package filesystem.commands
 import filesystem.files.{Directory, File}
 import filesystem.filesystem.State
 
-class Echo(name: String, contents: String) extends Command {
-  override def apply(state: State): State = {
+class Echo(tokens: List[String]) extends Command {
+  def mkString(tokens: List[String]): String =
+    tokens.mkString(" ")
+
+  def getContents(tokens: List[String]): String =
+    mkString(tokens.slice(0, tokens.size - 2))
+
+  def printContents(tokens: List[String], state: State): State =
+    state.setMessage(mkString(tokens))
+
+  def writeToFile(name: String, contents: String, state: State): State =
     state.wd.findItem(name).flatMap(item => {
       val allDirectoriesInPath = state.wd.getAllDirectoriesInPath
       val oldFile = item.asFile
       val newFile = new File(
         oldFile.parentPath,
         oldFile.name,
-        oldFile.contents ++ contents.substring(1, contents.length - 1)
+        oldFile.contents ++ contents
       )
 
       for {
@@ -25,5 +34,16 @@ class Echo(name: String, contents: String) extends Command {
     }).getOrElse(
       state.setMessage(s"File not found: $name.")
     )
+
+  override def apply(state: State): State = {
+    val newTokens = tokens.slice(1, tokens.size)
+    val size = newTokens.size
+    val doPrintContents = printContents(newTokens, state)
+
+    if (size > 3) {
+      if (newTokens(size - 2).equals(Command.SEND_TO)) writeToFile(
+        tokens.last, getContents(newTokens), state
+      ) else doPrintContents
+    } else doPrintContents
   }
 }
