@@ -13,6 +13,8 @@ object Command {
   val CD = "cd"
   val TOUCH = "touch"
   val RM = "rm"
+  val ECHO = "echo"
+  val CAT = "cat"
 
   def from(input: String): Command = input.split(" ") match {
     // MKDIR
@@ -53,7 +55,27 @@ object Command {
       RM,
       "You must supply the name of the item you wish to remove."
     )
-    case Array(RM, _*) => new TooManyArguments(CD)
+    case Array(RM, _*) => new TooManyArguments(RM)
+
+    // ECHO
+    case Array(ECHO, name, contents) => new Echo(name, contents)
+    case Array(ECHO) => new IncompleteCommand(
+      ECHO,
+      "You must supply the name of the file you wish to add contents to."
+    )
+    case Array(ECHO, _) => new IncompleteCommand(
+      ECHO,
+      "You must supply the contents you wish to add to the file."
+    )
+    case Array(ECHO, _*) => new TooManyArguments(ECHO)
+
+    // CAT
+    case Array(CAT, name) => new Cat(name)
+    case Array(CAT) => new IncompleteCommand(
+      CAT,
+      "You must supply the name of the file you wish to read."
+    )
+    case Array(CAT, _*) => new TooManyArguments(CAT)
 
     case _ => new UnknownCommand
   }

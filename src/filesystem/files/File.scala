@@ -2,7 +2,7 @@ package filesystem.files
 
 import filesystem.filesystem.FilesystemException
 
-class File(override val parentPath: String, override val name: String, contents: String)
+class File(override val parentPath: String, override val name: String, val contents: String)
   extends Item(parentPath, name) {
   override def asFile: File = this
 

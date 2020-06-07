@@ -53,6 +53,7 @@ object Directory {
   val GO_UP = ".."
 
   val ADD_ITEM = "add_item"
+  val REPLACE_ITEM = "replace_item"
   val REMOVE_ITEM = "remove_item"
 
   def createRoot: Directory = Directory.createEmpty("", "")
@@ -76,6 +77,7 @@ object Directory {
                      ): Option[Directory] = {
     if (path.isEmpty) action match {
       case ADD_ITEM => Some(currentDirectory.addItem(item))
+      case REPLACE_ITEM => Some(currentDirectory.replaceItem(item.name, item))
       case REMOVE_ITEM => Some(currentDirectory.removeItem(item))
       case _ => throw new IllegalArgumentException(s"Unknown action supplied: $action.")
     } else for {
