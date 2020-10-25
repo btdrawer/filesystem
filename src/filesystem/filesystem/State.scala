@@ -2,11 +2,7 @@ package filesystem.filesystem
 
 import filesystem.files.Directory
 
-class State(
-                  val root: Directory,
-                  val wd: Directory,
-                  val output: String
-                ) {
+class State(val root: Directory, val wd: Directory, val output: String) {
   def show(): Unit = {
     if (output != "") println(output)
     print(State.SHELL_TOKEN)

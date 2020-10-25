@@ -1,7 +1,7 @@
 package filesystem.commands
 
 import filesystem.files.{Directory, File, Item}
-import filesystem.filesystem.{State}
+import filesystem.filesystem.State
 
 class Echo(tokens: List[String]) extends Command {
   def mkString(tokens: List[String]): String =
@@ -15,29 +15,27 @@ class Echo(tokens: List[String]) extends Command {
 
   def successMessage: String = "Wrote to file"
 
-  def isFile(wd: Directory, name: String): Boolean =
-    wd
-      .findItem(name)
-      .flatMap(item => Some(!item.isDirectory))
-      .getOrElse(true)
+  def isFile(wd: Directory, name: String): Boolean = wd
+    .findItem(name)
+    .flatMap(item => Some(!item.isDirectory))
+    .getOrElse(true)
 
-  def echoToFile(name: String, contents: String, state: State): State = {
+  def echoToFile(name: String, contents: String, state: State): State =
     if (!isFile(state.wd, name)) state.setMessage(
       s"A directory exists with this name: $name."
     )
     else if (Item.isIllegalName(name)) state.setMessage(
       s"Illegal name: $name. File names cannot include dots or separators."
     )
-    else {
-      val file = new File(state.wd.parentPath, name, contents)
-      UpdateItem(
-        file, Directory.REPLACE_ITEM, successMessage, state
-      ).getOrElse(
-        // This will only be called if something else is wrong in the program
-        state.setMessage("An error occurred.")
-      )
-    }
-  }
+    else UpdateItem(
+      new File(state.wd.parentPath, name, contents),
+      Directory.REPLACE_ITEM,
+      successMessage,
+      state
+    ).getOrElse(
+      // This will only be called if something else is wrong in the program
+      state.setMessage("An error occurred.")
+    )
 
   def appendToFile(name: String, contents: String, state: State): State =
     state.wd.findItem(name).flatMap(item => {

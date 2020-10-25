@@ -37,13 +37,11 @@ class Directory(override val parentPath: String, override val name: String, val 
   def getAllDirectoriesInPath: List[String] =
     Directory.getDirectoriesFromPath(path.substring(1))
 
-  def findDescendant(path: List[String]): Option[Directory] = {
+  def findDescendant(path: List[String]): Option[Directory] =
     if (path.isEmpty) Some(this)
-    else findItem(path.head)
-      .flatMap(directory =>
-        directory.asDirectory.findDescendant(path.tail)
-      )
-  }
+    else findItem(path.head).flatMap(directory =>
+      directory.asDirectory.findDescendant(path.tail)
+    )
 }
 
 object Directory {
@@ -70,11 +68,11 @@ object Directory {
     .filter(directoryName => !directoryName.isEmpty)
 
   def updateStructure(
-                       currentDirectory: Directory,
-                       path: List[String],
-                       item: Item,
-                       action: String
-                     ): Option[Directory] = {
+    currentDirectory: Directory,
+    path: List[String],
+    item: Item,
+    action: String
+  ): Option[Directory] =
     if (path.isEmpty) action match {
       case ADD_ITEM => Some(currentDirectory.addItem(item))
       case REPLACE_ITEM => Some(currentDirectory.replaceItem(item.name, item))
@@ -84,5 +82,4 @@ object Directory {
       nextDirectory <- currentDirectory.findItem(path.head)
       updatedDirectory <- updateStructure(nextDirectory.asDirectory, path.tail, item, action)
     } yield currentDirectory.replaceItem(updatedDirectory.name, updatedDirectory)
-  }
 }

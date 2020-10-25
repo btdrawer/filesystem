@@ -1,6 +1,6 @@
 package filesystem.commands
 
-import filesystem.files.{Directory}
+import filesystem.files.Directory
 import filesystem.filesystem.State
 
 class Ls() extends Command {
